@@ -541,7 +541,7 @@ bool TreeCtrl::Create() {
     // must be done at the end. Doing  SetWindowStyle() sends bogus (?)
     // TVN_ITEMCHANGED notification. As an alternative we could ignore TVN_ITEMCHANGED
     // if hItem doesn't point to an TreeItem
-    Subclass();
+    //Subclass();
 
     void* user = this;
     RegisterHandlerForMessage(hwnd, WM_NOTIFY, Handle_WM_NOTIFY, user);

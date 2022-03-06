@@ -5,6 +5,39 @@
 struct WindowBase;
 struct Window;
 
+// A structure that contains the data members for CDC.
+struct CDC_Data {
+    // Constructor
+    CDC_Data() : dc(0), count(1L), isManagedHDC(FALSE), wnd(0), savedDCState(0), isPaintDC(false) {
+        ZeroMemory(&ps, sizeof(ps));
+    }
+
+    // CBitmap bitmap;
+    //  CBrush brush;
+    //  CFont font;
+    //  CPalette palette;
+    //  CPen pen;
+    //  CRgn rgn;
+    HDC dc;            // The HDC belonging to this CDC
+    long count;        // Reference count
+    bool isManagedHDC; // Delete/Release the HDC on destruction
+    HWND wnd;          // The HWND of a Window or Client window DC
+    int savedDCState;  // The save state of the HDC.
+    bool isPaintDC;
+    PAINTSTRUCT ps;
+};
+
+struct CDC {
+    CDC();       // Constructs a new CDC without assigning a HDC
+    CDC(HDC dc); // Constructs a new CDC and assigns a HDC
+    virtual ~CDC();
+    operator HDC() const {
+        return m_pData->dc;
+    } // Converts a CDC to a HDC
+
+    CDC_Data* m_pData; // pointer to the class's data members
+};
+
 struct WndEvent {
     // args sent to WndProc
     HWND hwnd = nullptr;
@@ -131,6 +164,7 @@ struct DropFilesEvent : WndEvent {
 using DropFilesHandler = std::function<void(DropFilesEvent*)>;
 
 struct WindowBase;
+using CWnd = WindowBase;
 
 struct WindowBase : public ILayout {
     Kind kind{nullptr};
@@ -190,7 +224,6 @@ struct WindowBase : public ILayout {
     str::Str text;
 
     HWND hwnd{nullptr};
-    UINT_PTR subclassId{0};
 
     WindowBase() = default;
     explicit WindowBase(HWND p);
@@ -210,10 +243,6 @@ struct WindowBase : public ILayout {
     Size Layout(Constraints bc) override;
     void SetBounds(Rect) override;
     void SetInsetsPt(int top, int right = -1, int bottom = -1, int left = -1);
-
-    void Destroy();
-    void Subclass();
-    void Unsubclass();
 
     void SetIsEnabled(bool) const;
     bool IsEnabled() const;
@@ -243,7 +272,63 @@ struct WindowBase : public ILayout {
     void SetBackgroundColor(COLORREF);
     void SetColors(COLORREF bg, COLORREF txt);
     void SetRtl(bool) const;
+
+    // from win32-framework
+    WNDPROC m_prevWindowProc;
+
+    void Subclass(HWND wnd);
+    void AddToMap();
+    bool RemoveFromMap();
+    void Cleanup();
+    static WindowBase* GetCWndPtr(HWND wnd);
+
+    static LRESULT CALLBACK StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    operator HWND() const {
+        return GetHwnd();
+    }
+    HWND GetHwnd() const {
+        return hwnd;
+    }
+    WNDPROC GetPrevWindowProc() const {
+        return m_prevWindowProc;
+    }
+
+    bool IsWindow() const;
+    CWnd GetDlgItem(int dlgItemID) const;
+
+    // Not intended to be overridden
+    virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+
+    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+
+    // Override these functions as required
+    virtual LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual void OnInitialUpdate();
+    virtual int OnCreate(CREATESTRUCT& cs);
+    virtual void OnDestroy();
+    virtual void OnClose();
+    virtual void Destroy();
+    virtual bool OnCommand(WPARAM wparam, LPARAM lparam);
+    virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
+    virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
+    virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual bool OnEraseBkgnd(CDC& dc);
+    virtual LRESULT OnMessageReflect(UINT msg, WPARAM wparam, LPARAM lparam);
+    LRESULT MessageReflect(UINT msg, WPARAM wparam, LPARAM lparam);
+    virtual void OnMenuUpdate(UINT id);
 };
+
+// Registered messages defined by Win32++
+const UINT UWM_WINDOWCREATED =
+    ::RegisterWindowMessageA("UWM_WINDOWCREATED"); // Posted when a window is created or attached.
+
+// Messages defined by Win32++
+// WM_APP range: 0x8000 through 0xBFFF
+// Note: The numbers defined for window messages don't always need to be unique. View windows defined by users for
+// example,
+//  could use other user defined messages with the same number as those below without issue.
+#define UWM_UPDATECOMMAND (WM_APP + 0x3F18) // Message - sent before a menu is displayed. Used by OnMenuUpdate.
+#define UWM_GETCWND (WM_APP + 0x3F0C)       // Message - returns a pointer to this CWnd.
 
 void Handle_WM_CONTEXTMENU(WindowBase* w, WndEvent* ev);
 
@@ -262,7 +347,6 @@ struct Window : WindowBase {
     void Close();
 };
 
-UINT_PTR NextSubclassId();
 int RunMessageLoop(HACCEL accelTable, HWND hwndDialog);
 void RunModalWindow(HWND hwndDialog, HWND hwndParent);
 void PositionCloseTo(WindowBase* w, HWND hwnd);

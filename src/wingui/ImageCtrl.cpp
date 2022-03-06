@@ -95,7 +95,7 @@ bool ImageCtrl::Create() {
     RECT r{0, 0, size.dx, size.dy};
     SetBounds(r);
     msgFilter = ImageCtrlWndProc;
-    Subclass();
+    //Subclass();
     return ok;
 }
 

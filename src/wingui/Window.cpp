@@ -98,14 +98,6 @@ void UnregisterHandlerForMessage(HWND hwnd, UINT msg) {
     ClearHwndMsgHandler(h);
 }
 
-static void UnregisterHandlersForHwnd(HWND hwnd) {
-    for (auto h : gHwndMsgHandlers) {
-        if (h->hwnd == hwnd) {
-            ClearHwndMsgHandler(h);
-        }
-    }
-}
-
 // TODO: potentially more messages
 // https://docs.microsoft.com/en-us/cpp/mfc/reflected-window-message-ids?view=vs-2019
 static HWND GetChildHWNDForMessage(UINT msg, WPARAM wp, LPARAM lp) {
@@ -461,28 +453,6 @@ static LRESULT CALLBACK wndProcCustom(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     return res;
 }
 
-static LRESULT CALLBACK wndProcSubclassed(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uIdSubclass,
-                                          DWORD_PTR dwRefData) {
-    CrashIf(dwRefData == 0);
-    WindowBase* w = (WindowBase*)dwRefData;
-
-    if (uIdSubclass != w->subclassId) {
-        return DefSubclassProc(hwnd, msg, wp, lp);
-    }
-
-    LRESULT res = 0;
-    if (HandleRegisteredMessages(hwnd, msg, wp, lp, res)) {
-        return res;
-    }
-
-    bool didHandle = false;
-    res = wndBaseProcDispatch(w, hwnd, msg, wp, lp, didHandle);
-    if (didHandle) {
-        return res;
-    }
-    return DefSubclassProc(hwnd, msg, wp, lp);
-}
-
 // TODO: do I need WM_CTLCOLORSTATIC?
 #if 0
     // https://docs.microsoft.com/en-us/windows/win32/controls/wm-ctlcolorstatic
@@ -499,48 +469,26 @@ static LRESULT CALLBACK wndProcSubclassed(HWND hwnd, UINT msg, WPARAM wp, LPARAM
     }
 #endif
 
-void WindowBase::Subclass() {
-    CrashIf(!hwnd);
-    WindowBase* wb = this;
-    subclassId = NextSubclassId();
-    BOOL ok = SetWindowSubclass(hwnd, wndProcSubclassed, subclassId, (DWORD_PTR)wb);
-    CrashIf(!ok);
-    if (!ok) {
-        subclassId = 0;
-    }
-}
-
-void WindowBase::Unsubclass() {
-    if (subclassId) {
-        RemoveWindowSubclass(hwnd, wndProcSubclassed, subclassId);
-        subclassId = 0;
-    }
-}
-
 WindowBase::WindowBase(HWND p) {
     kind = kindWindowBase;
     parent = p;
     ctrlID = GetNextCtrlID();
 }
 
-// generally not needed for child controls as they are destroyed when
-// a parent is destroyed
-void WindowBase::Destroy() {
-    auto tmp = hwnd;
-    if (IsWindow(tmp)) {
-        DestroyWindow(tmp);
-        tmp = nullptr;
-    }
-    hwnd = nullptr;
-}
-
 WindowBase::~WindowBase() {
-    Unsubclass();
+    if (GetCWndPtr(*this) == this) // Is window managed by Win32++?
+    {
+        if (IsWindow())
+            ::DestroyWindow(*this);
+    }
+
+    RemoveFromMap();
+
+#if 0 // my old code
     if (backgroundColorBrush != nullptr) {
         DeleteObject(backgroundColorBrush);
     }
-    Destroy();
-    UnregisterHandlersForHwnd(hwnd);
+#endif
 }
 
 void WindowBase::WndProc(WndEvent* ev) {
@@ -1016,4 +964,494 @@ void PositionCloseTo(WindowBase* w, HWND hwnd) {
     Point& ip = w->initialPos;
     ip.x = (int)r.left + (int)offX;
     ip.y = (int)r.top + (int)offY;
+}
+
+struct HwndToWindowBase {
+    HWND hwnd;
+    WindowBase* win;
+};
+
+Vec<HwndToWindowBase> gHwndToWindowBase;
+
+WindowBase* GetCWndFromMap(HWND hwnd) {
+    for (auto& e : gHwndToWindowBase) {
+        if (e.hwnd == hwnd) {
+            return e.win;
+        }
+    }
+    return nullptr;
+}
+
+bool RemoveWindowFromMap(WindowBase* win) {
+    int n = gHwndToWindowBase.isize();
+    for (int i = 0; i < n; i++) {
+        auto& e = gHwndToWindowBase[i];
+        if (e.win == win) {
+            gHwndToWindowBase.RemoveAtFast((size_t)i);
+            return true;
+        }
+    }
+    return false;
+}
+
+void AddHwndToMap(HWND hwnd, WindowBase* win) {
+    // This HWND is should not be in the map yet
+    assert(0 == GetCWndFromMap(hwnd));
+
+    // Remove any old map entry for this CWnd (required when the CWnd is reused).
+    RemoveWindowFromMap(win);
+
+    // TOOD: lock
+    HwndToWindowBase el{hwnd, win};
+    gHwndToWindowBase.Append(el);
+}
+
+// Store the window handle and CWnd pointer in the HWND map.
+void WindowBase::AddToMap() {
+    AddHwndToMap(hwnd, this);
+}
+
+// Removes this CWnd's pointer from the application's map.
+// TODO: remove
+bool WindowBase::RemoveFromMap() {
+    return RemoveWindowFromMap(this);
+}
+
+__declspec(thread) WindowBase* gCurrWindowBase;
+
+// All Window windows direct their messages here. This function redirects the message
+// to the CWnd's WndProc function.
+LRESULT CALLBACK WindowBase::StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+    auto w = GetCWndFromMap(wnd);
+    if (w == 0) {
+        // The CWnd pointer wasn't found in the map, so add it now.
+        // Retrieve pointer to CWnd object from Thread Local Storage TLS.
+        w = gCurrWindowBase;
+        if (w) {
+            gCurrWindowBase = NULL;
+
+            // Store the CWnd pointer in the HWND map.
+            w->hwnd = wnd;
+            w->AddToMap();
+        }
+    }
+
+    if (w == 0) {
+        // Got a message for a window that's not in the map.
+        // We should never get here.
+        // TRACE("*** Warning in CWnd::StaticWindowProc: HWND not in window map ***\n");
+        return 0;
+    }
+
+    return w->WndProc(msg, wparam, lparam);
+}
+
+// A private function used by CreateEx, Attach and AttachDlgItem.
+void WindowBase::Subclass(HWND wnd) {
+    assert(::IsWindow(wnd));
+
+    this->hwnd = wnd;
+    AddToMap(); // Store the CWnd pointer in the HWND map
+    LONG_PTR pWndProc = reinterpret_cast<LONG_PTR>(Window::StaticWindowProc);
+    LONG_PTR pRes = ::SetWindowLongPtr(wnd, GWLP_WNDPROC, pWndProc);
+    m_prevWindowProc = reinterpret_cast<WNDPROC>(pRes);
+}
+
+// Pass messages on to the appropriate default window procedure
+// CMDIChild and CMDIFrame override this function.
+LRESULT WindowBase::FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) {
+    if (m_prevWindowProc)
+        return ::CallWindowProc(m_prevWindowProc, *this, msg, wparam, lparam);
+    else
+        return ::DefWindowProc(*this, msg, wparam, lparam);
+}
+
+// Retrieves the pointer to the CWnd associated with the specified HWND.
+// Returns NULL if a CWnd object doesn't already exist for this HWND.
+WindowBase* WindowBase::GetCWndPtr(HWND wnd) {
+    return wnd ? GetCWndFromMap(wnd) : 0;
+}
+
+// Processes this window's message. Override this function in your class
+// derived from CWnd to handle window messages.
+LRESULT WindowBase::WndProc(UINT msg, WPARAM wparam, LPARAM lparam) {
+    //  A typical function might look like this:
+
+    //  switch (msg)
+    //  {
+    //  case MESSAGE1:  return OnMessage1();
+    //  case MESSAGE2:  return OnMessage2();
+    //  }
+
+    // The message functions should return a value recommended by the Windows API documentation.
+    // Alternatively, return FinalWindowProc to continue with default processing.
+
+    // Always pass unhandled messages on to WndProcDefault
+    return WndProcDefault(msg, wparam, lparam);
+}
+
+// Provides default processing for this window's messages.
+// All WndProc functions should pass unhandled window messages to this function.
+LRESULT WindowBase::WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) {
+    LRESULT result = 0;
+    if (UWM_WINDOWCREATED == msg) {
+        OnInitialUpdate();
+        return 0;
+    }
+
+    switch (msg) {
+        case WM_CLOSE: {
+            OnClose();
+            return 0;
+        }
+        case WM_COMMAND: {
+            // Reflect this message if it's from a control.
+            CWnd* pWnd = GetCWndPtr(reinterpret_cast<HWND>(lparam));
+            if (pWnd != NULL)
+                result = pWnd->OnCommand(wparam, lparam);
+
+            // Handle user commands.
+            if (0 == result)
+                result = OnCommand(wparam, lparam);
+
+            if (0 != result)
+                return 0;
+        } break; // Note: Some MDI commands require default processing.
+        case WM_CREATE: {
+            LPCREATESTRUCT pcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
+            if (pcs == NULL) {
+                // throw CWinException(_T("WM_CREATE failed"));
+                CrashAlwaysIf(true);
+                return 0;
+            }
+
+            return OnCreate(*pcs);
+        }
+        case WM_DESTROY:
+            OnDestroy();
+            break; // Note: Some controls require default processing.
+        case WM_NOTIFY: {
+            // Do notification reflection if message came from a child window.
+            // Restricting OnNotifyReflect to child windows avoids double handling.
+            LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+            HWND from = pHeader->hwndFrom;
+            CWnd* pWndFrom = GetCWndFromMap(from);
+
+            if (pWndFrom != NULL)
+                if (::GetParent(from) == hwnd)
+                    result = pWndFrom->OnNotifyReflect(wparam, lparam);
+
+            // Handle user notifications
+            if (result == 0)
+                result = OnNotify(wparam, lparam);
+            if (result != 0)
+                return result;
+            break;
+        }
+
+        case WM_PAINT: {
+            // OnPaint calls OnDraw when appropriate.
+            OnPaint(msg, wparam, lparam);
+        }
+
+            return 0;
+
+        case WM_ERASEBKGND: {
+            CDC dc(reinterpret_cast<HDC>(wparam));
+            BOOL preventErasure;
+
+            preventErasure = OnEraseBkgnd(dc);
+            if (preventErasure)
+                return TRUE;
+        } break;
+
+        // A set of messages to be reflected back to the control that generated them.
+        case WM_CTLCOLORBTN:
+        case WM_CTLCOLOREDIT:
+        case WM_CTLCOLORDLG:
+        case WM_CTLCOLORLISTBOX:
+        case WM_CTLCOLORSCROLLBAR:
+        case WM_CTLCOLORSTATIC:
+        case WM_DRAWITEM:
+        case WM_MEASUREITEM:
+        case WM_DELETEITEM:
+        case WM_COMPAREITEM:
+        case WM_CHARTOITEM:
+        case WM_VKEYTOITEM:
+        case WM_HSCROLL:
+        case WM_VSCROLL:
+        case WM_PARENTNOTIFY: {
+            result = MessageReflect(msg, wparam, lparam);
+            if (result != 0)
+                return result; // Message processed so return.
+        } break;               // Do default processing when message not already processed.
+
+        case UWM_UPDATECOMMAND:
+            OnMenuUpdate(static_cast<UINT>(wparam)); // Perform menu updates.
+            break;
+
+        case UWM_GETCWND: {
+            // assert(this == GetCWndPtr(m_wnd));
+            return reinterpret_cast<LRESULT>(this);
+        }
+
+    } // switch (msg)
+
+    // Now hand all messages to the default procedure.
+    return FinalWindowProc(msg, wparam, lparam);
+
+} // LRESULT CWnd::WindowProc(...)
+
+// Called when menu items are about to be displayed. Override this function to
+// enable/disable the menu item, or add/remove the check box or radio button
+// to menu items.
+void CWnd::OnMenuUpdate(UINT) {
+    // Override this function to modify the behavior of menu items,
+    // such as adding or removing checkmarks.
+}
+
+CDC::CDC() {
+    // Allocate memory for our data members
+    m_pData = new CDC_Data;
+}
+
+// This constructor assigns a pre-existing HDC to the CDC.
+// The HDC will NOT be released or deleted when the CDC object is destroyed.
+// Note: this constructor permits a call like this:
+// CDC MyCDC = SomeHDC;
+CDC::CDC(HDC dc) {
+    m_pData = new CDC_Data;
+    // TODO: fix me
+    CrashAlwaysIf(true);
+    // Attach(dc);
+}
+
+// Processes notification (WM_NOTIFY) messages from a child window.
+LRESULT CWnd::OnNotify(WPARAM, LPARAM) {
+    // You can use either OnNotifyReflect or OnNotify to handle notifications
+    // Override OnNotifyReflect to handle notifications in the CWnd class that
+    //   generated the notification.   OR
+    // Override OnNotify to handle notifications in the PARENT of the CWnd class
+    //   that generated the notification.
+
+    // Your overriding function should look like this ...
+
+    // LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+    // switch (pHeader->code)
+    // {
+    //      Handle your notifications from the CHILD window here
+    //      Return the value recommended by the Windows API documentation.
+    //      For many notifications, the return value doesn't matter, but for some it does.
+    // }
+
+    // return 0 for unhandled notifications
+    // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result) for dialogs.
+    return 0;
+}
+
+// Called when the background of the window's client area needs to be erased.
+// Override this function in your derived class to perform drawing tasks.
+// Return Value: Return FALSE to also permit default erasure of the background
+//               Return TRUE to prevent default erasure of the background
+bool CWnd::OnEraseBkgnd(CDC&) {
+    return FALSE;
+}
+
+// This function is called automatically once the window is created
+// Override it in your derived class to automatically perform tasks
+// after window creation.
+void CWnd::OnInitialUpdate() {
+}
+
+// Called in response to WM_CLOSE, before the window is destroyed.
+// Override this function to suppress destroying the window.
+// WM_CLOSE is sent by SendMessage(WM_CLOSE, 0, 0) or by clicking X
+//  in the top right corner.
+// Child windows don't receive WM_CLOSE unless they are closed using
+//  the Close function.
+void CWnd::OnClose() {
+    Destroy();
+}
+
+// Destroys the window and returns the CWnd back to its default state,
+//  ready for reuse.
+void CWnd::Destroy() {
+    if (GetCWndPtr(*this) == this) {
+        if (IsWindow())
+            ::DestroyWindow(*this);
+    }
+
+    // Return the CWnd to its default state.
+    Cleanup();
+}
+
+// Called when the window paints its client area.
+LRESULT CWnd::OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) {
+    // Window controls and other subclassed windows are expected to do their own
+    // drawing, so we don't call OnDraw for those.
+
+    // Note: CustomDraw or OwnerDraw are normally used to modify the drawing of
+    //       controls, but overriding OnPaint is also an option.
+
+    if (!m_prevWindowProc) {
+        if (::GetUpdateRect(*this, NULL, FALSE)) {
+            CrashMe();
+            // CPaintDC dc(*this);
+            // OnDraw(dc);
+        } else
+        // RedrawWindow can require repainting without an update rect.
+        {
+            CrashMe();
+            // CClientDC dc(*this);
+            // OnDraw(dc);
+        }
+
+        // No more drawing required
+        return 0;
+    }
+
+    // Allow window controls to do their default drawing.
+    return FinalWindowProc(msg, wparam, lparam);
+}
+
+// A function used internally to call OnMessageReflect. Don't call or override this function.
+LRESULT CWnd::MessageReflect(UINT msg, WPARAM wparam, LPARAM lparam) {
+    HWND wnd = 0;
+    switch (msg) {
+        case WM_COMMAND:
+        case WM_CTLCOLORBTN:
+        case WM_CTLCOLOREDIT:
+        case WM_CTLCOLORDLG:
+        case WM_CTLCOLORLISTBOX:
+        case WM_CTLCOLORSCROLLBAR:
+        case WM_CTLCOLORSTATIC:
+        case WM_CHARTOITEM:
+        case WM_VKEYTOITEM:
+        case WM_HSCROLL:
+        case WM_VSCROLL:
+            wnd = reinterpret_cast<HWND>(lparam);
+            break;
+
+        case WM_DRAWITEM:
+        case WM_MEASUREITEM:
+        case WM_DELETEITEM:
+        case WM_COMPAREITEM:
+            wnd = ::GetDlgItem(hwnd, static_cast<int>(wparam));
+            break;
+
+        case WM_PARENTNOTIFY:
+            switch (LOWORD(wparam)) {
+                case WM_CREATE:
+                case WM_DESTROY:
+                    wnd = reinterpret_cast<HWND>(lparam);
+                    break;
+            }
+    }
+
+    CWnd* pWnd = GetCWndFromMap(wnd);
+
+    if (pWnd != NULL)
+        return pWnd->OnMessageReflect(msg, wparam, lparam);
+
+    return 0;
+}
+
+// This function processes those special messages sent by some older controls,
+// and reflects them back to the originating CWnd object.
+// Override this function in your derived class to handle these special messages:
+// WM_COMMAND, WM_CTLCOLORBTN, WM_CTLCOLOREDIT, WM_CTLCOLORDLG, WM_CTLCOLORLISTBOX,
+// WM_CTLCOLORSCROLLBAR, WM_CTLCOLORSTATIC, WM_CHARTOITEM,  WM_VKEYTOITEM,
+// WM_HSCROLL, WM_VSCROLL, WM_DRAWITEM, WM_MEASUREITEM, WM_DELETEITEM,
+// WM_COMPAREITEM, WM_PARENTNOTIFY.
+LRESULT CWnd::OnMessageReflect(UINT, WPARAM, LPARAM) {
+    // This function processes those special messages (see above) sent
+    // by some older controls, and reflects them back to the originating CWnd object.
+    // Override this function in your derived class to handle these special messages.
+
+    // Your overriding function should look like this ...
+
+    // switch (msg)
+    // {
+    //      Handle your reflected messages here
+    // }
+
+    // return 0 for unhandled messages
+    return 0;
+}
+
+// The GetDlgItem function retrieves a handle to a control in the dialog box.
+// Refer to GetDlgItem in the Windows API documentation for more information.
+CWnd CWnd::GetDlgItem(int dlgItemID) const {
+    CrashIf(!IsWindow());
+    return CWnd(::GetDlgItem(*this, dlgItemID));
+}
+
+// The IsWindow function determines whether the window exists.
+// Refer to IsWindow in the Windows API documentation for more information.
+bool CWnd::IsWindow() const {
+    return ::IsWindow(*this);
+}
+
+// Returns the CWnd to its default state.
+void CWnd::Cleanup() {
+    CrashIf(!IsWindow());
+    if (!IsWindow()) {
+        RemoveFromMap();
+        hwnd = 0;
+        m_prevWindowProc = 0;
+    }
+}
+
+// Called when the user interacts with the menu or toolbar.
+bool CWnd::OnCommand(WPARAM, LPARAM) {
+    // Override this to handle WM_COMMAND messages, for example
+
+    //  UINT id = LOWORD(wparam);
+    //  switch (id)
+    //  {
+    //  case IDM_FILE_NEW:
+    //      OnFileNew();
+    //      TRUE;   // return TRUE for handled commands
+    //  }
+
+    // return FALSE for unhandled commands
+    return false;
+}
+
+// Called during window creation. Override this functions to perform tasks
+// such as creating child windows.
+int CWnd::OnCreate(CREATESTRUCT&) {
+    // This function is called when a WM_CREATE message is received
+    // Override it to automatically perform tasks during window creation.
+    // Return 0 to continue creating the window.
+
+    // Note: Window controls don't call OnCreate. They are sublcassed (attached)
+    //  after their window is created.
+
+    return 0;
+}
+
+// This function is called when a window is destroyed.
+// Override it to do additional tasks, such as ending the application
+//  with PostQuitMessage.
+void CWnd::OnDestroy() {
+}
+
+// Processes the notification (WM_NOTIFY) messages in the child window that originated them.
+LRESULT CWnd::OnNotifyReflect(WPARAM, LPARAM) {
+    // Override OnNotifyReflect to handle notifications in the CWnd class that
+    //   generated the notification.
+
+    // Your overriding function should look like this ...
+
+    // LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+    // switch (pHeader->code)
+    // {
+    //      Handle your notifications from this window here
+    //      Return the value recommended by the Windows API documentation.
+    // }
+
+    // Return 0 for unhandled notifications.
+    // The framework will call SetWindowLongPtr(DWLP_MSGRESULT, result) for dialogs.
+    return 0;
 }
