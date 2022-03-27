@@ -34,6 +34,9 @@
     <Filter Include="src\utils\tests">
       <UniqueIdentifier>{0FF3B448-7B7E-220D-848F-A501F0997E0D}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\win32-framework">
+      <UniqueIdentifier>{0A92C153-76F3-9E61-FF60-E5136BC1D520}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Accelerators.h">
@@ -218,6 +221,168 @@
     </ClInclude>
     <ClInclude Include="..\src\utils\UtAssert.h">
       <Filter>src\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\default_resource.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_appcore.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_appcore0.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_archive.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_commondlg.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_controls.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_criticalsection.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_cstring.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_ddx.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_dialog.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_dockframe.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_docking.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_exception.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_file.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_filefind.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_folderdialog.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_frame.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_gdi.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_hglobal.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_imagelist.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_listview.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_mdi.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_menu.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_menubar.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_menumetrics.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_messagepump.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_metafile.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_mutex.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_preview.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_printdialogex.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_printdialogs.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_propertysheet.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_rebar.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_rect.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_regkey.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_ribbon.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_richedit.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_scrollview.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_setup.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_shared_ptr.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_socket.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_statusbar.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_stdcontrols.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_tab.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_taskdialog.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_textconv.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_themes.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_thread.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_time.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_toolbar.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_treeview.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_webbrowser.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_wincore.h">
+      <Filter>src\win32-framework</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\win32-framework\wxx_wincore0.h">
+      <Filter>src\win32-framework</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -484,9 +649,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\docs\log.txt">
-      <Filter>src\docs</Filter>
-    </None>
     <None Include="..\src\docs\releasenotes.txt">
       <Filter>src\docs</Filter>
     </None>

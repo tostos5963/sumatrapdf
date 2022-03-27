@@ -624,6 +624,60 @@
     <ClInclude Include="..\src\uia\StartPageProvider.h" />
     <ClInclude Include="..\src\uia\TextRange.h" />
     <ClInclude Include="..\src\utils\UtAssert.h" />
+    <ClInclude Include="..\src\win32-framework\default_resource.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_appcore.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_appcore0.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_archive.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_commondlg.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_controls.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_criticalsection.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_cstring.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_ddx.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_dialog.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_dockframe.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_docking.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_exception.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_file.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_filefind.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_folderdialog.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_frame.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_gdi.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_hglobal.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_imagelist.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_listview.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_mdi.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_menu.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_menubar.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_menumetrics.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_messagepump.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_metafile.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_mutex.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_preview.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_printdialogex.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_printdialogs.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_propertysheet.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_rebar.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_rect.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_regkey.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_ribbon.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_richedit.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_scrollview.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_setup.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_shared_ptr.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_socket.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_statusbar.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_stdcontrols.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_tab.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_taskdialog.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_textconv.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_themes.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_thread.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_time.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_toolbar.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_treeview.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_webbrowser.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_wincore.h" />
+    <ClInclude Include="..\src\win32-framework\wxx_wincore0.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ext\synctex\synctex_parser.c" />
@@ -876,7 +930,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\docs\log.txt" />
     <None Include="..\src\docs\releasenotes.txt" />
     <None Include="..\src\docs\todo.txt" />
     <None Include="..\src\docs\translations.txt" />

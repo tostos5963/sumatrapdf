@@ -548,6 +548,7 @@ function sumatrapdf_files()
 
     "ext/versions.txt",
     "docs/*.txt",
+    "win32-framework/*.h",
   })
   filter {"configurations:Debug"}
     files_in_dir("src", {
