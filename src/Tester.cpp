@@ -5,9 +5,6 @@
    executable and related makefile additions for each test, we have one test
    driver which dispatches desired test based on cmd-line arguments. */
 
-#define NOMINMAX
-#include "wxx_wincore.h"
-
 #include "utils/BaseUtil.h"
 #include "utils/ScopedWin.h"
 #include "utils/CmdLineArgsIter.h"

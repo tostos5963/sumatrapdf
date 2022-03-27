@@ -1,3 +1,6 @@
+#define NOMINMAX
+#include "wxx_wincore.h"
+
 #include "test-app.h"
 #include "utils/BaseUtil.h"
 
@@ -55,8 +58,41 @@ static ILayout* CreateMainLayout(HWND hwnd) {
     return padding;
 }
 
+namespace TestWin32Framework1 {
+class CMyWindow : public CWnd {
+  public:
+    CMyWindow() {
+    }
+    virtual void OnDestroy() {
+        PostQuitMessage(0);
+    } // Ends the program
+    virtual ~CMyWindow() {
+    }
+};
+
+int Run() {
+    // Start Win32++
+    CWinApp theApp;
+
+    // Create a CMyWindow object
+    CMyWindow myWindow;
+
+    // Create (and display) the window
+    myWindow.Create();
+
+    // Run the application's message loop
+    return theApp.Run();
+}
+}
+
+
 void TestApp(HINSTANCE hInstance) {
     gHinst = hInstance;
+
+    if (true) {
+        TestWin32Framework1::Run();
+        return;
+    }
 
     // return TestDirectDraw(hInstance, nCmdShow);
     // return TestTab(hInstance, nCmdShow);
