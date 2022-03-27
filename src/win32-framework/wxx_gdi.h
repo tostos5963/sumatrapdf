@@ -794,22 +794,13 @@ namespace Win32xx
         {
             assert(::IsWindow(wnd) || wnd == HWND_DESKTOP);
 
-            try
-            {
-                HDC dc = ::GetDC(wnd);
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiGetDC());
+            HDC dc = ::GetDC(wnd);
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiGetDC());
 
-                Attach(dc);
-                SetManaged(true);
-                SetWindow(wnd);
-            }
-
-            catch(...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            Attach(dc);
+            SetManaged(true);
+            SetWindow(wnd);
         }
 
         virtual ~CClientDC() {}
@@ -830,22 +821,13 @@ namespace Win32xx
             if (0 == wnd) wnd = GetDesktopWindow();
             assert(::IsWindow(wnd));
 
-            try
-            {
-                HDC dc = ::GetDCEx(wnd, hrgnClip, flags);
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiGetDCEx());
+            HDC dc = ::GetDCEx(wnd, hrgnClip, flags);
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiGetDCEx());
 
-                Attach(dc);
-                SetManaged(true);
-                SetWindow(wnd);
-            }
-
-            catch(...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            Attach(dc);
+            SetManaged(true);
+            SetWindow(wnd);
         }
 
         virtual ~CClientDCEx() {}
@@ -861,16 +843,7 @@ namespace Win32xx
     public:
         explicit CMemDC(HDC dc)
         {
-            try
-            {
-                CreateCompatibleDC(dc);
-            }
-
-            catch(...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            CreateCompatibleDC(dc);
         }
         virtual ~CMemDC() {}
     };
@@ -886,23 +859,14 @@ namespace Win32xx
         {
             assert(::IsWindow(wnd));
 
-            try
-            {
-                HDC dc = ::BeginPaint(wnd, GetPaintStruct());
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiBeginPaint());
+            HDC dc = ::BeginPaint(wnd, GetPaintStruct());
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiBeginPaint());
 
-                Attach(dc);
-                SetManaged(true);
-                SetPaintDC(true);
-                SetWindow(wnd);
-            }
-
-            catch(...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            Attach(dc);
+            SetManaged(true);
+            SetPaintDC(true);
+            SetWindow(wnd);
         }
 
         virtual ~CPaintDC()  {}
@@ -919,23 +883,13 @@ namespace Win32xx
         {
             assert(::IsWindow(wnd) || wnd == HWND_DESKTOP);
 
-            try
-            {
-                HDC dc = ::GetWindowDC(wnd);
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiGetWinDC());
+            HDC dc = ::GetWindowDC(wnd);
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiGetWinDC());
 
-                Attach(dc);
-                SetManaged(true);
-                SetWindow(wnd);
-            }
-
-            catch(...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
-
+            Attach(dc);
+            SetManaged(true);
+            SetWindow(wnd);
         }
         virtual ~CWindowDC() {}
     };
@@ -960,21 +914,13 @@ namespace Win32xx
 
         void Create(LPCTSTR fileName = NULL)
         {
-            try
-            {
-                assert(GetHDC() == 0);
-                HDC dc = ::CreateMetaFile(fileName);
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiDC());
+            assert(GetHDC() == 0);
+            HDC dc = ::CreateMetaFile(fileName);
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiDC());
 
-                Attach(dc);
-                SetManaged(true);
-            }
-            catch (...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            Attach(dc);
+            SetManaged(true);
         }
 
         // Closes the metafile and returns a CMetaFile object.
@@ -1009,21 +955,13 @@ namespace Win32xx
 
         void CreateEnhanced(HDC ref, LPCTSTR fileName, const RECT* pBounds, LPCTSTR description)
         {
-            try
-            {
-                assert(GetHDC() == 0);
-                HDC dc = ::CreateEnhMetaFile(ref, fileName, pBounds, description);
-                if (dc == 0)
-                    throw CResourceException(GetApp()->MsgGdiDC());
+            assert(GetHDC() == 0);
+            HDC dc = ::CreateEnhMetaFile(ref, fileName, pBounds, description);
+            if (dc == 0)
+                throw CResourceException(GetApp()->MsgGdiDC());
 
-                Attach(dc);
-                SetManaged(true);
-            }
-            catch (...)
-            {
-                Release();  // Cleanup
-                throw;      // Rethrow
-            }
+            Attach(dc);
+            SetManaged(true);
         }
 
         // Closes the enhanced metafile and returns a CEnhMetaFile object.
@@ -1772,16 +1710,7 @@ namespace Win32xx
 
     inline CBrush::CBrush(COLORREF color)
     {
-        try
-        {
-            CreateSolidBrush(color);
-        }
-
-        catch(...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow
-        }
+        CreateSolidBrush(color);
     }
 
     inline CBrush::operator HBRUSH() const
@@ -1898,16 +1827,7 @@ namespace Win32xx
 
     inline CFont::CFont(const LOGFONT& logFont)
     {
-        try
-        {
-            CreateFontIndirect(logFont);
-        }
-
-        catch(...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow;
-        }
+        CreateFontIndirect(logFont);
     }
 
     inline CFont::operator HFONT() const
@@ -2121,30 +2041,12 @@ namespace Win32xx
 
     inline CPen::CPen(int penStyle, int width, COLORREF color)
     {
-        try
-        {
-            CreatePen(penStyle, width, color);
-        }
-
-        catch(...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow
-        }
+        CreatePen(penStyle, width, color);
     }
 
     inline CPen::CPen(int penStyle, int width, const LOGBRUSH& logBrush, int styleCount /*= 0*/, const DWORD* pStyle /*= NULL*/)
     {
-        try
-        {
-            Attach(::ExtCreatePen(penStyle, width, &logBrush, styleCount, pStyle));
-        }
-
-        catch(...)
-        {
-            Release();  // Cleanup
-            throw;      // Rethrow
-        }
+        Attach(::ExtCreatePen(penStyle, width, &logBrush, styleCount, pStyle));
     }
 
     inline CPen::operator HPEN () const

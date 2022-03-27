@@ -781,7 +781,7 @@ workspace "SumatraPDF"
     regconf()
     entrypoint "WinMainCRTStartup"
     flags { "NoManifest" }
-    includedirs { "src", "mupdf/include" }
+    includedirs { "src", "src/win32-framework", "mupdf/include" }
 
     webviewconf()
 
@@ -830,7 +830,7 @@ workspace "SumatraPDF"
     regconf()
     entrypoint "WinMainCRTStartup"
     flags { "NoManifest" }
-    includedirs { "src", "mupdf/include" }
+    includedirs { "src", "src/win32-framework", "mupdf/include" }
 
     synctex_files()
     mui_files()

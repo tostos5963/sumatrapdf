@@ -123,17 +123,8 @@ namespace Win32xx
         Shared_Ptr() : m_ptr(0), m_count(0) { }
         Shared_Ptr(T* p) : m_ptr(p), m_count(0)
         {
-            try
-            {
-                if (m_ptr) m_count = new long(0);
-                inc_ref();
-            }
-            // catch the unlikely event of 'new long(0)' throwing an exception
-            catch (const std::bad_alloc&)
-            {
-                delete m_ptr;
-                throw;
-            }
+            if (m_ptr) m_count = new long(0);
+            inc_ref();
         }
         Shared_Ptr(const Shared_Ptr& rhs) : m_ptr(rhs.m_ptr), m_count(rhs.m_count) { inc_ref(); }
         ~Shared_Ptr()

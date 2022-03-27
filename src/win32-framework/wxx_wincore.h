@@ -1015,22 +1015,14 @@ namespace Win32xx
         dx.Init(*this, retrieveAndValidate);
 
         BOOL ok = FALSE;  // Remains FALSE if DoDataExchange throws a CUserException.
-        try
+        DoDataExchange(dx);
+        if (dx.GetLastControl() != 0 && dx.GetLastEditControl() != 0)
         {
-            DoDataExchange(dx);
-            if (dx.GetLastControl() != 0 && dx.GetLastEditControl() != 0)
-            {
-                // select all characters in the edit control
-                ::SetFocus(dx.GetLastEditControl());
-                ::SendMessage(dx.GetLastEditControl(), EM_SETSEL, 0, -1);
-            }
-            ok = TRUE; // DoDataExchage completed successfully.
+            // select all characters in the edit control
+            ::SetFocus(dx.GetLastEditControl());
+            ::SendMessage(dx.GetLastEditControl(), EM_SETSEL, 0, -1);
         }
-        catch(const CUserException& e)
-        {
-            // Validation has failed. Call the Fail to display the error.
-            dx.Fail( e.GetText() );
-        }
+        ok = TRUE; // DoDataExchage completed successfully.
 
         return ok;
     }
