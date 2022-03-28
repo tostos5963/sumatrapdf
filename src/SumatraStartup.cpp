@@ -1080,7 +1080,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, __unused HINSTANCE hPrevInstance, __un
     }
 
 #if defined(DEBUG)
-    if (flags.testApp) {
+    if (flags.testApp || true) {
         // in TestApp.cpp
         extern void TestApp(HINSTANCE hInstance);
         TestApp(hInstance);

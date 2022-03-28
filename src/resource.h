@@ -14,6 +14,7 @@
 #define IDD_DIALOG_CUSTOM_ZOOM          138
 #define IDD_PROPSHEET_PRINT_ADVANCED    139
 #define IDD_DIALOG_FAV_ADD              140
+#define IDD_DIALOG_DOC_PROPERTIES       141
 
 #define IDC_GOTO_PAGE_EDIT              1000
 #define IDC_GOTO_PAGE_GO                1001
@@ -59,6 +60,9 @@
 #define IDC_PRINT_SCALE_FIT             1062
 #define IDC_PRINT_SCALE_NONE            1063
 #define IDC_SECTION_PRINT_COMPATIBILITY 1070
+#define IDC_BTN_CLOSE                   1080
+#define IDC_BTN_GET_FONT_LIST           1081
+#define IDC_RICHEDIT_PROPS              1082
 #define IDC_TOC_LABEL_WITH_CLOSE        1101
 #define IDC_FAV_LABEL_WITH_CLOSE        1106
 #define IDC_TABBAR                      1110
