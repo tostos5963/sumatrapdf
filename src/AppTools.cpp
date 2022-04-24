@@ -22,7 +22,7 @@
 bool HasBeenInstalled() {
     // see GetInstallationDir() in Installer.cpp
     const WCHAR* appName = GetAppNameTemp();
-    AutoFreeWstr regPathUninst = str::Join(L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\", appName);
+    const WCHAR* regPathUninst = str::JoinTemp(L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\", appName);
     AutoFreeWstr installedPath = LoggedReadRegStr2(regPathUninst, L"InstallLocation");
     if (!installedPath) {
         return false;
@@ -113,11 +113,13 @@ WCHAR* AppGenDataFilename(const WCHAR* fileName) {
     if (!path) {
         return nullptr;
     }
+    WCHAR* res = nullptr;
     bool ok = dir::Create(path);
-    if (!ok) {
-        return nullptr;
+    if (ok) {
+        res = path::Join(path, fileName);
     }
-    return path::Join(path, fileName);
+    str::Free(path);
+    return res;
 }
 
 char* AppGenDataFilenameTemp(const char* fileName) {
