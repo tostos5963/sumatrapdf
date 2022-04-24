@@ -203,6 +203,16 @@ ACCEL gBuiltInAccelerators[] = {
     // // for Logitech's wireless presenters which target PowerPoint's shortcuts
     {0, '.', CmdPresentationBlackBackground},
     {0, 'c', CmdViewContinuous},
+
+    {0, '0', CmdGoToFirstPage},
+    {0, '1', CmdZoomFitPage},
+    {0, '2', CmdZoomFitWidth},
+    {0, ':', CmdGoToPage},
+    {0, '<', CmdViewRotateLeft},
+    {0, '>', CmdViewRotateRight},
+    {0, 'G', CmdGoToLastPage},
+    {0, 'b', CmdGoToPrevPage},
+    {0, 'd', CmdCloseCurrentDocument},
 };
 
 ACCEL* gAccels = nullptr;

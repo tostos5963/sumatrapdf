@@ -178,11 +178,13 @@ COLORREF GetAppColor(AppColor col) {
     }
 
     if (col == AppColor::TabSelectedBg) {
-        return COL_WHITE;
+        // return COL_WHITE;
+        return RGB(0x00, 0x00, 0xff);
     }
 
     if (col == AppColor::TabSelectedText) {
-        return COL_DARK_GRAY;
+        // return COL_DARK_GRAY;
+        return COL_WHITE;
     }
 
     if (col == AppColor::TabSelectedCloseX) {

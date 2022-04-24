@@ -3635,6 +3635,14 @@ static bool FrameOnKeydown(WindowInfo* win, WPARAM key, LPARAM lp) {
         TabsOnCtrlTab(win, isShift);
         return true;
     }
+    if (win->tabsVisible && 'v' == key) {
+        TabsOnCtrlTab(win, true);
+        return true;
+    }
+    if (win->tabsVisible && 'V' == key) {
+        TabsOnCtrlTab(win, false);
+        return true;
+    }
 
     if (!win->IsDocLoaded()) {
         return false;
