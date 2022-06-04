@@ -205,8 +205,8 @@ ACCEL gBuiltInAccelerators[] = {
     {0, 'c', CmdViewContinuous},
 
     {0, '0', CmdGoToFirstPage},
-    {0, '1', CmdZoomFitPage},
-    {0, '2', CmdZoomFitWidth},
+    {0, '1', CmdZoomFitPageAndSinglePage},
+    {0, '2', CmdZoomFitWidthAndContinuous},
     {0, ':', CmdGoToPage},
     {0, '<', CmdViewRotateLeft},
     {0, '>', CmdViewRotateRight},
